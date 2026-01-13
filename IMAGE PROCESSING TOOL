@@ -1,0 +1,92 @@
+#include <opencv2/opencv.hpp>
+#include <iostream>
+using namespace std;
+using namespace cv;
+int main() {
+    string imagePath;
+    cout << "Enter the path of the image: ";
+    cin >> imagePath;
+    Mat image = imread(imagePath);
+    if (image.empty()) {
+        cout << "Error: Could not load image!\n";
+        return 0;
+    }
+    Mat processedImage = image.clone();
+    int choice;
+    do {
+        imshow("Image Editor", processedImage);
+        waitKey(1);
+        cout << "\n===== IMAGE PROCESSING TOOL =====\n";
+        cout << "1. Grayscale\n";
+        cout << "2. Blur\n";
+        cout << "3. Sharpen\n";
+        cout << "4. Adjust Brightness & Contrast\n";
+        cout << "5. Resize Image\n";
+        cout << "6. Crop Image\n";
+        cout << "7. Save Image\n";
+        cout << "8. Exit\n";
+        cout << "Choose an option: ";
+        cin >> choice;
+        switch (choice) {
+            case 1:
+                cvtColor(processedImage, processedImage, COLOR_BGR2GRAY);
+                cvtColor(processedImage, processedImage, COLOR_GRAY2BGR);
+                cout << "Grayscale applied.\n";
+                break;
+            case 2:
+                GaussianBlur(processedImage, processedImage, Size(9, 9), 0);
+                cout << "Blur applied.\n";
+                break;
+            case 3: {
+                Mat kernel = (Mat_<float>(3,3) <<
+                    0, -1, 0,
+                   -1, 5, -1,
+                    0, -1, 0);
+                filter2D(processedImage, processedImage, -1, kernel);
+                cout << "Sharpen applied.\n";
+                break;
+            }
+            case 4: {
+                double alpha;
+                int beta;
+                cout << "Enter contrast (1.0 - 3.0): ";
+                cin >> alpha;
+                cout << "Enter brightness (-100 to 100): ";
+                cin >> beta;
+                processedImage.convertTo(processedImage, -1, alpha, beta);
+                cout << "Brightness & contrast adjusted.\n";
+                break;
+            }
+            case 5: {
+                int width, height;
+                cout << "Enter new width: ";
+                cin >> width;
+                cout << "Enter new height: ";
+                cin >> height;
+                resize(processedImage, processedImage, Size(width, height));
+                cout << "Image resized.\n";
+                break;
+            }
+            case 6: {
+                int x, y, w, h;
+                cout << "Enter x, y, width, height: ";
+                cin >> x >> y >> w >> h;
+                Rect cropArea(x, y, w, h);
+                processedImage = processedImage(cropArea);
+                cout << "Image cropped.\n";
+                break;
+            }
+            case 7:
+                imwrite("output_image.jpg", processedImage);
+                cout << "Image saved as output_image.jpg\n";
+                break;
+            case 8:
+                cout << "Exiting Image Processing Tool.\n";
+                break;
+            default:
+                cout << "Invalid option!\n";
+        }
+    } while (choice != 8);
+    destroyAllWindows();
+    return 0;
+}
